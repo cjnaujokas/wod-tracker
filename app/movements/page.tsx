@@ -6,8 +6,9 @@ export default function MovementsPage() {
   return (
     <main>
       <h1>Movements</h1>
-      fallback={<p>Loading movements…</p>}
-      <MovementList />
+      <Suspense fallback={<p>Loading movements…</p>}>
+        <MovementList />
+      </Suspense>
     </main>
   );
 }
