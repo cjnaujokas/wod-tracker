@@ -14,7 +14,7 @@ export default function MovementsPage() {
 }
 
 async function MovementList() {
-  // await connection();
+  await connection();
 
   const movements = await prisma.movement.findMany({
     orderBy: [{ category: "asc" }, { name: "asc" }],
