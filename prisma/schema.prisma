@@ -13,21 +13,113 @@ datasource db {
 }
 
 model Movement {
-  id       String @id @default(cuid())
-  name     String @unique
-  category String
+  id             String          @id @default(cuid())
+  name           String          @unique
+  category       String
+  pieceMovements PieceMovement[]
+}
+
+enum PieceType {
+  FOR_TIME
+  AMRAP
+  EMOM
+  STRENGTH
+  OTHER
+}
+
+model WorkoutSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Calendar date, no time. Returned as midnight UTC: format with timeZone "UTC".
+  date      DateTime @db.Date
+  title     String?
+  notes     String?
+  pieces    Piece[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id, userId]) // target of Piece's composite FK
+  @@index([userId, date])
+}
+
+model Piece {
+  id               String          @id @default(cuid())
+  userId           String
+  workoutSessionId String
+  workoutSession   WorkoutSession  @relation(fields: [workoutSessionId, userId], references: [id, userId], onDelete: Cascade)
+  position         Int
+  type             PieceType
+  title            String?
+  /// Free-text rep scheme: "21-15-9", "5x5", "every 2:00 x 6"
+  scheme           String?
+  timeCapSeconds   Int?
+  /// AMRAP length / EMOM total length
+  durationSeconds  Int?
+  /// EMOM interval
+  intervalSeconds  Int?
+  notes            String?
+  movements        PieceMovement[]
+  result           Result?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([id, userId]) // target of PieceMovement's and Result's composite FKs
+  @@index([workoutSessionId, position])
+}
+
+model PieceMovement {
+  id         String   @id @default(cuid())
+  userId     String
+  pieceId    String
+  piece      Piece    @relation(fields: [pieceId, userId], references: [id, userId], onDelete: Cascade)
+  movementId String
+  /// Restrict: deleting a library movement must never erase history
+  movement   Movement @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  position   Int
+  reps       Int?
+  /// Canonical unit is kg (#16)
+  loadKg     Float?
+  distanceM  Float?
+  notes      String?
+
+  @@index([pieceId, position])
+  @@index([movementId])
+}
+
+model Result {
+  id          String   @id @default(cuid())
+  userId      String
+  pieceId     String
+  piece       Piece    @relation(fields: [pieceId, userId], references: [id, userId], onDelete: Cascade)
+  /// FOR_TIME finished. Capped FOR_TIME: timeSeconds null, reps set.
+  timeSeconds Int?
+  /// AMRAP: rounds + reps
+  rounds      Int?
+  reps        Int?
+  /// STRENGTH: top load, kg
+  loadKg      Float?
+  /// No default: the form must choose Rx or scaled explicitly
+  rx          Boolean
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // One result per piece (composite FK pins userId to the piece's owner)
+  @@unique([pieceId, userId])
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id              String           @id
+  name            String
+  email           String
+  emailVerified   Boolean          @default(false)
+  image           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  workoutSessions WorkoutSession[]
 
   @@unique([email])
   @@map("user")
