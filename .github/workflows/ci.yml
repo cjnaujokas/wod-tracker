@@ -16,9 +16,26 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      # Placeholders: nothing in CI connects to a database.
+      # Placeholders for the build: next build never connects to a database.
+      # Tests don't use these; vitest.config.ts points them at the postgres service.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       DATABASE_URL_UNPOOLED: postgresql://ci:ci@localhost:5432/ci
+    services:
+      # Throwaway database for tests, recreated every run. Same credentials as
+      # tests/test-db.ts; not a secret.
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: wod_test
+          POSTGRES_PASSWORD: wod_test
+          POSTGRES_DB: wod_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wod_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,4 +46,5 @@ jobs:
       - run: npx prisma generate
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm test
       - run: npx next build

@@ -6,6 +6,7 @@ export default function Home() {
     <main>
       <h1>WOD Tracker</h1>
       <Link href="/movements">Movements</Link>
+      <Link href="/workouts/new">New workout</Link>
       <SignOutButton />
     </main>
   );
