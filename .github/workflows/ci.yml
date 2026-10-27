@@ -24,7 +24,7 @@ jobs:
       # Throwaway database for tests, recreated every run. Same credentials as
       # tests/test-db.ts; not a secret.
       postgres:
-        image: postgres:17
+        image: postgres:18
         env:
           POSTGRES_USER: wod_test
           POSTGRES_PASSWORD: wod_test
