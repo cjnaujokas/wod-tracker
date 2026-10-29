@@ -4,6 +4,8 @@
 
 export const LOAD_UNITS = ["lb", "kg"] as const;
 export type LoadUnit = (typeof LOAD_UNITS)[number];
+/** Display unit until #16 adds a per-user preference. */
+export const DISPLAY_UNIT: LoadUnit = "lb";
 
 const KG_PER_LB = 0.45359237; // exact, by definition
 

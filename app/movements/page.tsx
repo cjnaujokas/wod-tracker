@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { listMovements } from "@/lib/movements";
 
 export default function MovementsPage() {
   return (
@@ -16,9 +16,7 @@ export default function MovementsPage() {
 async function MovementList() {
   await connection();
 
-  const movements = await prisma.movement.findMany({
-    orderBy: [{ category: "asc" }, { name: "asc" }],
-  });
+  const movements = await listMovements();
 
   if (movements.length === 0) {
     return <p>No movements yet.</p>;
