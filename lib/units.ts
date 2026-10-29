@@ -11,6 +11,10 @@ export function toKg(value: number, unit: LoadUnit): number {
   return unit === "kg" ? value : value * KG_PER_LB;
 }
 
+export function isLoadUnit(value: unknown): value is LoadUnit {
+  return (LOAD_UNITS as readonly unknown[]).includes(value);
+}
+
 export function fromKg(kg: number, unit: LoadUnit): number {
   return unit === "kg" ? kg : kg / KG_PER_LB;
 }

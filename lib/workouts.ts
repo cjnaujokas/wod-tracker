@@ -4,10 +4,22 @@ import type { PieceType } from "@/generated/prisma/client";
 // Every function takes the user's id from the caller, which must get it from
 // requireUser() on the server, never from form input or URL params.
 
+export type NewPieceMovement = {
+  movementId: string;
+  reps?: number | null;
+  /** Unrounded kg; validation converts from what was typed */
+  loadKg?: number | null;
+  distanceM?: number | null;
+};
+
 export type NewPiece = {
   type: PieceType;
   title?: string | null;
   scheme?: string | null;
+  timeCapSeconds?: number | null;
+  durationSeconds?: number | null;
+  intervalSeconds?: number | null;
+  movements?: NewPieceMovement[];
 };
 
 export type NewWorkoutSession = {
