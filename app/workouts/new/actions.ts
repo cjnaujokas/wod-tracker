@@ -7,6 +7,7 @@ import {
   parseNewWorkoutSession,
   type FormState,
 } from "@/lib/workout-validation";
+import { UnknownMovementError } from "@/lib/workouts";
 
 export async function createWorkoutSessionAction(
   _prev: FormState,
@@ -18,6 +19,17 @@ export async function createWorkoutSessionAction(
   const parsed = parseNewWorkoutSession(formData);
   if (!parsed.ok) return { errors: parsed.errors };
 
-  const workout = await createWorkoutSession(user.id, parsed.data);
+  let workout;
+  try {
+    workout = await createWorkoutSession(user.id, parsed.data);
+  } catch (error) {
+    if (error instanceof UnknownMovementError)
+      return {
+        errors: {
+          pieces: "A movement wasn't found. Reload the page and pick it again.",
+        },
+      };
+    throw error;
+  }
   redirect(`/workouts/${workout.id}`); // throws; keep it outside any try/catch
 }
